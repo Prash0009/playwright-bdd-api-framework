@@ -99,6 +99,20 @@ jobs:
         with:
           path: allure-report
 
+      - name: Write run summary
+        if: always()
+        run: |
+          {
+            echo "## 🧪 API Test Run"
+            echo ""
+            echo "| Item | Link |"
+            echo "| --- | --- |"
+            echo "| 📊 Allure report (GitHub Pages) | https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ |"
+            echo "| 📦 Downloadable artifacts (report + logs) | [this run's Artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts) |"
+            echo ""
+            echo "> The Pages report always reflects the latest \`main\` build."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   deploy-report:
     name: Publish Allure report to GitHub Pages
     needs: test
@@ -111,3 +125,11 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Write deploy summary
+        run: |
+          {
+            echo "## 🚀 Allure report published"
+            echo ""
+            echo "**[Open the report](${{ steps.deployment.outputs.page_url }})**"
+          } >> "$GITHUB_STEP_SUMMARY"
