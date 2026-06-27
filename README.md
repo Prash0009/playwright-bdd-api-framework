@@ -88,6 +88,18 @@ Playwright's own HTML report is also produced under `./playwright-report`, and l
 
 In CI, the Allure report is published to **GitHub Pages** after every push to `main`.
 
+### 📄 PDF report (auto-generated)
+
+A custom Playwright reporter ([`reporters/pdf-reporter.js`](reporters/pdf-reporter.js)) writes a
+PDF execution summary into **`./reports`** automatically after **every** run (any tag, local or CI):
+
+- `reports/api-test-report-<timestamp>.pdf` — one per run
+- `reports/latest.pdf` — always the most recent run
+
+The PDF contains the overall status, pass/fail/flaky/skipped counts, pass rate, duration, and a
+colour-coded per-scenario results table. No extra command is needed — it's produced as part of
+`npm test` (and every `npm run test:<tag>`). In CI it's bundled into the `test-artifacts` download.
+
 ---
 
 ## 🏷️ Test data

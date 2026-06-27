@@ -24,6 +24,7 @@ export default defineConfig({
   timeout: config.timeout,
   reporter: [
     ['list'],
+    ['./reporters/pdf-reporter.js', { outputDir: 'reports' }],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     [
       'allure-playwright',

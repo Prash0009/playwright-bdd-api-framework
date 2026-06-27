@@ -90,6 +90,7 @@ jobs:
           path: |
             allure-report
             playwright-report
+            reports
             logs
           retention-days: 14
 
