@@ -1,0 +1,7 @@
+{
+  "list": "/users",
+  "single": "/users/2",
+  "create": "/users",
+  "supportedMethods": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  "sampleNames": ["neo", "trinity", "morpheus"]
+}

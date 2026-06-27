@@ -1,0 +1,113 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Cucumber tag expression to run (e.g. @smoke, @get, '@get or @post')"
+        required: false
+        default: "@regression"
+
+# Allow the workflow to publish the Allure report to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Avoid overlapping Pages deployments.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Run API tests & build Allure report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (browsers not required for API, deps only)
+        run: npx playwright install-deps || true
+
+      - name: Resolve tag filter
+        id: tags
+        run: echo "value=${{ github.event.inputs.tag || '@regression' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate BDD tests (tag filtered)
+        run: npx bddgen --tags "${{ steps.tags.outputs.value }}"
+
+      - name: Run tests
+        env:
+          CI: "true"
+          TEST_ENV: qa
+        run: npx playwright test
+
+      # Keep Allure history across runs so trends render.
+      - name: Restore Allure history
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: allure-history
+          key: allure-history-${{ github.run_id }}
+          restore-keys: allure-history-
+
+      - name: Merge previous history into results
+        if: always()
+        run: |
+          mkdir -p allure-results
+          if [ -d allure-history ]; then cp -r allure-history/. allure-results/history || true; fi
+
+      - name: Generate Allure report
+        if: always()
+        run: npx allure generate allure-results --clean -o allure-report
+
+      - name: Persist Allure history
+        if: always()
+        run: |
+          rm -rf allure-history
+          mkdir -p allure-history
+          cp -r allure-report/history/. allure-history/ || true
+
+      - name: Upload report & logs as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: |
+            allure-report
+            playwright-report
+            logs
+          retention-days: 14
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+  deploy-report:
+    name: Publish Allure report to GitHub Pages
+    needs: test
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

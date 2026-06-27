@@ -1,0 +1,16 @@
+{
+  "create": {
+    "payload": {
+      "name": "morpheus",
+      "job": "leader"
+    }
+  },
+  "update": {
+    "payload": {
+      "name": "morpheus",
+      "job": "zion resident"
+    }
+  },
+  "existingUserId": 2,
+  "missingUserId": 23
+}

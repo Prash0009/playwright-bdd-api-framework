@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# generated test artefacts
+.features-gen/
+allure-results/
+allure-report/
+playwright-report/
+test-results/
+logs/
+
+# env & secrets
+.env
+
+# os / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
